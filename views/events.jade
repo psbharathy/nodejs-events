@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  div
+    p
+      span 
+      a(href="/addEvent") Add Event
+  table
+    tr
+      td Id
+      td Type
+      td Actor
+      td Repo
+      td Action
+    for event in events
+      tr
+        td= event.id
+        td= event.event_type
+        td= event.actor_name
+        td= event.repo_name
+        td
+          a(href="/event/"+event.id) Edit
