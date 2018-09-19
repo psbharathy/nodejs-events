@@ -25,6 +25,16 @@ const actors = async (req, res) => {
   }
 };
 
+const updateActor = async (req, res) => {
+  let query = "UPDATE  actors SET login = ?, avatar_url= ? WHERE id = ?";
+  let Values = [req.body.login, req.body.avatar_url, req.body.id];
+  await db.execute(query, Values, function(err, result) {
+    if (err) throw err;
+    console.log(" Actor Updated Sucessfully " + result);
+  });
+  res.send({ msg: "Updated Sucessfully" });
+};
+
 function actorTransformers(actorsData) {
   const actors = [];
   for (let e in actorsData) {
@@ -39,3 +49,4 @@ function actorTransformers(actorsData) {
 }
 exports.createActor = createActor;
 exports.getAllActors = actors;
+exports.updateActor = updateActor;

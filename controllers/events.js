@@ -39,13 +39,13 @@ const createEvent = async (req, res) => {
   res.send(req.body);
 };
 
-const getActorsEvent = async (actorId, req, res) => {
+const getActorsEvent = async (req, res) => {
   console.log("Actors Event");
 
   try {
     let query =
       "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id where events.actor_id = ? Order By events.id ASC";
-    await db.query(query, [actorId], function(err, rows) {
+    await db.query(query, [req.params.actor], function(err, rows) {
       // res.status(200).render("events", { title: "All Events", events: rows });
       const events = eventTransformers(rows);
 

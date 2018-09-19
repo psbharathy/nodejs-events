@@ -2,8 +2,7 @@ var express = require("express");
 const {
   getAllEvents,
   createEvent,
-  getActorsEvent,
-  deleteEvents
+  getActorsEvent
 } = require("../controllers/events");
 var router = express.Router();
 
@@ -19,12 +18,7 @@ router.post("/", async (req, res) => {
 // Fetching Events by Actor
 router.get("/actors/:actor", async (req, res) => {
   console.log(req.params.actor);
-  getActorsEvent(req.params.actor, req, res);
-});
-
-// Fetching Events by Actor
-router.delete("/erase", async (req, res) => {
-  deleteEvents(req, res);
+  getActorsEvent(req, res);
 });
 
 module.exports = router;
