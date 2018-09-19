@@ -1,23 +1,17 @@
 const {
   addEvent,
   getEvent,
+  getEvents,
+  getEventsByActor,
+  deleteEvent,
   validateEvent,
   eventTransformers
 } = require("../models/event");
 
 const events = async (req, res) => {
   try {
-    let query =
-      "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id";
-    db.query(query, function(err, rows) {
-      // res.status(200).render("events", { title: "All Events", events: rows });
-      const events = eventTransformers(rows);
-
-      res.send(events);
-
-      if (!err) console.log("The solution is: ");
-      else console.log("Error while performing Query.");
-    });
+    const events = await getEvents();
+    res.send(await eventTransformers(events));
   } catch (ex) {
     return ex;
   }
@@ -42,19 +36,9 @@ async function createEvent(req, res) {
 
 const getActorsEvent = async (req, res) => {
   console.log("Actors Event");
-
   try {
-    let query =
-      "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id where events.actor_id = ? Order By events.id ASC";
-    await db.query(query, [req.params.actor], function(err, rows) {
-      // res.status(200).render("events", { title: "All Events", events: rows });
-      const events = eventTransformers(rows);
-
-      res.send(events);
-
-      if (!err) console.log("The solution is: ");
-      else console.log("Error while performing Query.");
-    });
+    const events = await getEventsByActor(req.params.actor);
+    res.send(await eventTransformers(events));
   } catch (ex) {
     return ex;
   }
@@ -62,20 +46,7 @@ const getActorsEvent = async (req, res) => {
 
 const deleteEvents = async (req, res) => {
   try {
-    let query = " TRUNCATE TABLE events";
-    let actQuery = " TRUNCATE TABLE actors";
-    let repoQuery = " TRUNCATE TABLE repository";
-    await db.execute(query, function(err, result) {
-      if (err) throw err;
-      console.log(" Events Records Deleted !");
-    });
-    await db.execute(actQuery, function(err, result) {
-      console.log(" Actors Records Deleted !");
-    });
-    await db.execute(repoQuery, function(err, result) {
-      console.log(" Repository Records Deleted !");
-    });
-    res.send(true);
+    res.send(await deleteEvent());
   } catch (ex) {
     return ex;
   }

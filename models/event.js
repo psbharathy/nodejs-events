@@ -19,18 +19,62 @@ function addEvent(req) {
     });
   });
 }
-async function getEvent(eventId) {
+async function getEventById(eventId) {
   return new Promise((resolve, reject) => {
     let query =
       "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id where events.id=?";
 
     db.execute(query, [eventId], function(err, result) {
-      if (err) rejecinsertIdt(" Event Not found !");
+      if (err) reject(" Event Not found !");
       resolve(result);
     });
   });
 }
 
+async function getEvents() {
+  return new Promise((resolve, reject) => {
+    let query =
+      "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id";
+
+    db.execute(query, function(err, result) {
+      if (err) reject(" Event Not found !");
+      resolve(result);
+    });
+  });
+}
+
+async function getEventsByActor(actor) {
+  return new Promise((resolve, reject) => {
+    let query =
+      "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id where events.actor_id = ? Order By events.id ASC";
+    db.execute(query, [actor], function(err, result) {
+      if (err) reject(" Event Not found !");
+      resolve(result);
+    });
+  });
+}
+async function deleteEvent(event) {
+  return new Promise((resolve, reject) => {
+    let query = " TRUNCATE TABLE events";
+    let actQuery = " TRUNCATE TABLE actors";
+    let repoQuery = " TRUNCATE TABLE repository";
+    db.execute(query, function(err, result) {
+      if (err) reject("Unable to delete an Event !");
+      resolve(result);
+      console.log(" Events Records Deleted !");
+    });
+    db.execute(actQuery, function(err, result) {
+      if (err) reject("Unable to delete an actor !");
+      console.log(" Actors Records Deleted !");
+      resolve(result);
+    });
+    db.execute(repoQuery, function(err, result) {
+      if (err) reject("Unable to delete an Repo !");
+      console.log(" Repository Records Deleted !");
+      resolve(result);
+    });
+  });
+}
 async function validateEvent(event) {
   const actor = await findActor(event.actor.id);
   console.log(actor);
@@ -69,6 +113,9 @@ async function eventTransformers(eventData) {
 }
 
 exports.addEvent = addEvent;
-exports.getEvent = getEvent;
+exports.getEvent = getEventById;
+exports.getEvents = getEvents;
+exports.getEventsByActor = getEventsByActor;
+exports.deleteEvent = deleteEvent;
 exports.validateEvent = validateEvent;
 exports.eventTransformers = eventTransformers;
