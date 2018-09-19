@@ -25,6 +25,14 @@ const actors = async (req, res) => {
   }
 };
 
+const findActorById = async function(actorId) {
+  let query = "SELECT id,login,avatar_url from actors WHERE id = ?";
+  await db.execute(query, [actorId], function(err, result) {
+    if (err) throw err;
+    if (!result) throw "Invalid Actor";
+  });
+};
+
 const updateActor = async (req, res) => {
   let query = "UPDATE  actors SET login = ?, avatar_url= ? WHERE id = ?";
   let Values = [req.body.login, req.body.avatar_url, req.body.id];

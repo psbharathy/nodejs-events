@@ -1,22 +1,36 @@
 const mysql = require("mysql2");
-try {
-  const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "secret",
-    database: "my_events"
-  });
+const Joi = require("joi");
+const { createActor, findActor } = require("./actor");
 
-  // connect to database
-  db.connect(err => {
-    if (err) {
-      throw err;
-    }
-    console.log("Connected to database");
+function addEvent(req) {
+  return new Promise((resolve, reject) => {
+    var sql =
+      "INSERT INTO events (event_type, actor_id, repo_id, created_at) VALUES (?,?,?,?) ";
+    let records = [
+      req.body.type,
+      req.body.actor.id,
+      req.body.repo.id,
+      req.body.created_at
+    ];
+    db.execute(sql, records, function(err, result) {
+      if (err) reject(" Unable to create an Event!");
+      resolve(result);
+    });
   });
-  global.db = db;
-} catch (ex) {
-  console.log(ex);
 }
 
-// exports.getEvents = events;
+async function validateEvent(event) {
+  const actor = await findActor(event.actor.id);
+  console.log(actor);
+  if (!actor) {
+    throw "Invalid Actor";
+  }
+  const repos = await getRepositories(event.repo.id);
+  console.log(repos);
+  if (repos.length == 0) {
+    throw "Invalid Repository";
+  }
+  return true;
+}
+exports.addEvent = addEvent;
+exports.validateEvent = validateEvent;

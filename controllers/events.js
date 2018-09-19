@@ -1,5 +1,6 @@
-const { createActor } = require("./actors");
-const { createRepo } = require("./repos");
+const { createActor, findActor } = require("./actors");
+const { getRepositories } = require("./repos");
+const { addEvent, validateEvent } = require("../models/event");
 
 const events = async (req, res) => {
   try {
@@ -18,26 +19,21 @@ const events = async (req, res) => {
     return ex;
   }
 };
-const createEvent = async (req, res) => {
-  // console.log(req.body);
-  actor = createActor(req.body.actor);
-  console.log(actor);
-  // repo = createRepo(req.body.repo);
-  var sql =
-    "INSERT INTO events (event_type, actor_id, repo_id, created_at) VALUES (?,?,?,?) ";
-  let records = [
-    req.body.type,
-    req.body.actor.id,
-    req.body.repo.id,
-    req.body.created_at
-  ];
-  console.log(records);
-  // await db.execute(sql, records, function(err, result) {
-  //   if (err) throw err;
-  //   console.log("1 record inserted, ID: " + result.insertId);
-  // });
-  res.send(req.body);
-};
+
+async function createEvent(req, res) {
+  try {
+    const isValid = await validateEvent(req.body);
+    if (isValid) {
+      const event = await addEvent(req, res);
+      console.log(event);
+      res.send(event);
+    }
+    res.send(isValid);
+  } catch (err) {
+    res.status(400).send({ err });
+  }
+}
+//
 
 const getActorsEvent = async (req, res) => {
   console.log("Actors Event");
