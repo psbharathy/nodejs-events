@@ -1,6 +1,9 @@
-const { createActor, findActor } = require("./actors");
-const { getRepositories } = require("./repos");
-const { addEvent, validateEvent } = require("../models/event");
+const {
+  addEvent,
+  getEvent,
+  validateEvent,
+  eventTransformers
+} = require("../models/event");
 
 const events = async (req, res) => {
   try {
@@ -24,11 +27,13 @@ async function createEvent(req, res) {
   try {
     const isValid = await validateEvent(req.body);
     if (isValid) {
-      const event = await addEvent(req, res);
-      console.log(event);
-      res.send(event);
+      let event = await addEvent(req, res);
+      console.log(event.insertId);
+      event = await getEvent(event.insertId);
+      res.send(await eventTransformers(event));
+    } else {
+      res.send(isValid);
     }
-    res.send(isValid);
   } catch (err) {
     res.status(400).send({ err });
   }
@@ -76,28 +81,6 @@ const deleteEvents = async (req, res) => {
   }
 };
 
-function eventTransformers(eventData) {
-  const events = [];
-  for (let e in eventData) {
-    let eArray = {
-      id: eventData[e].repo_id,
-      type: eventData[e].type,
-      actor: {
-        id: eventData[e].actor_id,
-        name: eventData[e].login,
-        avatar_url: eventData[e].avatar_url
-      },
-      repo: {
-        id: eventData[e].repo_id,
-        name: eventData[e].repo_name,
-        repo_url: eventData[e].repo_url
-      },
-      created_at: eventData[e].created_at
-    };
-    events.push(eArray);
-  }
-  return events;
-}
 exports.getAllEvents = events;
 exports.createEvent = createEvent;
 exports.getActorsEvent = getActorsEvent;

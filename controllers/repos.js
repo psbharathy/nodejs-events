@@ -33,4 +33,3 @@ function repoTransformers(repoData) {
 }
 
 exports.createRepo = createRepo;
-exports.getRepositories = getRepositories;
