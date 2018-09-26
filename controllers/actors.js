@@ -2,6 +2,7 @@ const {
   actorTransformers,
   getActors,
   findActor,
+  getActorStreak,
   updateActor
 } = require("../models/actor");
 
@@ -14,9 +15,15 @@ exports.getActors = async (req, res) => {
   }
 };
 
-exports.findActor = async function(actorId) {
+exports.findActor = async actorId => {
   const actor = await findActor(actorId);
   return res.send(actorTransformers(actor));
+};
+
+exports.getActorStreak = async (req, res) => {
+  const actors = await getActorStreak();
+  console.log(actors);
+  return res.send(actorTransformers(actors));
 };
 
 exports.updateActor = async (req, res) => {

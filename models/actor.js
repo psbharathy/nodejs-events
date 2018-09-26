@@ -34,6 +34,19 @@ exports.createActor = async actor => {
   });
 };
 
+exports.getActorStreak = async () => {
+  return new Promise((resolve, reject) => {
+    let query =
+      "select a.id, a.login,a.avatar_url, count(ev.actor_id) as actorCount,ev.created_at FROM `events` AS `ev`";
+    query +=
+      "LEFT JOIN actors as a on a.id = ev.actor_id group by ev.actor_id ORDER BY  actorCount DESC, ev.created_at DESC";
+    db.query(query, function(err, rows) {
+      if (err) reject(new Error(err));
+      resolve(rows);
+    });
+  });
+};
+
 exports.updateActor = async actor => {
   return new Promise((resolve, reject) => {
     let query = "UPDATE  actors SET login = ?, avatar_url= ? WHERE id = ?";
@@ -54,6 +67,7 @@ exports.actorTransformers = actorsData => {
       name: actorsData[e].login,
       avatar_url: actorsData[e].avatar_url
     };
+    if (e.eventCount) e.push({ count: e.eventCount });
     actors.push(eArray);
   }
   return actors;
