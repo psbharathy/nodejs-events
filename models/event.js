@@ -1,13 +1,12 @@
-const mysql = require("mysql2");
 const Joi = require("joi");
-const { getRepositories } = require("./repo");
-const { createActor, findActor } = require("./actor");
+const mysql = require("mysql2");
 
-function addEvent(req) {
+async function addEvent(req) {
   return new Promise((resolve, reject) => {
     let sql =
-      "INSERT INTO events (event_type, actor_id, repo_id, created_at) VALUES (?,?,?,?) ";
+      "INSERT INTO `events` (`id`,`event_type`, `actor_id`, `repo_id`, `created_at`) VALUES (?,?,?,?,?) ";
     let eventData = [
+      req.body.id,
       req.body.type,
       req.body.actor.id,
       req.body.repo.id,
@@ -19,6 +18,7 @@ function addEvent(req) {
     });
   });
 }
+
 async function getEventById(eventId) {
   return new Promise((resolve, reject) => {
     let query =
@@ -53,6 +53,7 @@ async function getEventsByActor(actor) {
     });
   });
 }
+
 async function deleteEvent(event) {
   return new Promise((resolve, reject) => {
     let query = " TRUNCATE TABLE events";
@@ -75,21 +76,36 @@ async function deleteEvent(event) {
     });
   });
 }
-async function validateEvent(event) {
-  const actor = await findActor(event.actor.id);
-  console.log(actor);
-  if (!actor) {
-    throw "Invalid Actor";
-  }
-  const repos = await getRepositories(event.repo.id);
-  console.log(repos);
-  if (repos.length == 0) {
-    throw "Invalid Repository";
-  }
-  return true;
+
+function validateEvent(event) {
+  const schema = {
+    id: Joi.number().required(),
+
+    type: Joi.string()
+      .min(1)
+      .max(255),
+    actor: Joi.object().keys({
+      id: Joi.number(),
+      login: Joi.string().required(),
+      avatar_url: Joi.string()
+        .uri()
+        .trim()
+        .required()
+    }),
+    repo: Joi.object().keys({
+      id: Joi.number(),
+      name: Joi.string().required(),
+      url: Joi.string()
+        .uri()
+        .trim()
+        .required()
+    }),
+    created_at: Joi.date().required()
+  };
+  return Joi.validate(event, schema);
 }
 
-async function eventTransformers(eventData) {
+function eventTransformers(eventData) {
   const events = [];
   for (let e in eventData) {
     let eArray = {
@@ -111,9 +127,8 @@ async function eventTransformers(eventData) {
   }
   return events;
 }
-
 exports.addEvent = addEvent;
-exports.getEvent = getEventById;
+exports.getEventById = getEventById;
 exports.getEvents = getEvents;
 exports.getEventsByActor = getEventsByActor;
 exports.deleteEvent = deleteEvent;

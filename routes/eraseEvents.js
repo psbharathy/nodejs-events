@@ -1,7 +1,6 @@
-var express = require("express");
+const express = require("express");
+const router = express.Router();
 const { deleteEvents } = require("../controllers/events");
-var router = express.Router();
-
 // Route related to delete events
 
 // Fetching Events by Actor

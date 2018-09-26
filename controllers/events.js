@@ -3,56 +3,66 @@ const {
   getEvent,
   getEvents,
   getEventsByActor,
-  deleteEvent,
   validateEvent,
   eventTransformers
 } = require("../models/event");
 
-const events = async (req, res) => {
+const { findActor, createActor } = require("../models/actor");
+const { findRepo, createRepo } = require("../models/repo");
+
+exports.getAllEvents = async (req, res) => {
   try {
     const events = await getEvents();
-    res.send(await eventTransformers(events));
+    res.send(eventTransformers(events));
   } catch (ex) {
     return ex;
   }
 };
 
-async function createEvent(req, res) {
+exports.createEvent = async (req, res) => {
   try {
-    const isValid = await validateEvent(req.body);
-    if (isValid) {
-      let event = await addEvent(req, res);
-      console.log(event.insertId);
-      event = await getEvent(event.insertId);
-      res.send(await eventTransformers(event));
-    } else {
-      res.send(isValid);
+    let actor, repo, event;
+    const { error } = validateEvent(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
     }
+    // fetch Actor or create
+    actor = await findActor(req.body.actor.id);
+    if (actor.length === 0) {
+      await createActor(req.body.actor);
+    }
+
+    // fetch Repo or create
+    repo = await findRepo(req.body.repo.id);
+    if (repo.length === 0) {
+      await createRepo(req.body.repo);
+    }
+
+    event = await addEvent(req, res);
+    // event = await getEvent(event.insertId);
+    return res.status(201).send({ msg: "success", event });
+    // res.send(await eventTransformers(event));
   } catch (err) {
-    res.status(400).send({ err });
+    return res.status(400).send({ err });
   }
-}
+};
 //
 
-const getActorsEvent = async (req, res) => {
-  console.log("Actors Event");
+exports.getActorsEvent = async (req, res) => {
   try {
+    console.log("Actors Event");
+
     const events = await getEventsByActor(req.params.actor);
-    res.send(await eventTransformers(events));
+    return res.send(eventTransformers(events));
   } catch (ex) {
     return ex;
   }
 };
 
-const deleteEvents = async (req, res) => {
+exports.deleteEvents = async (req, res) => {
   try {
     res.send(await deleteEvent());
   } catch (ex) {
     return ex;
   }
 };
-
-exports.getAllEvents = events;
-exports.createEvent = createEvent;
-exports.getActorsEvent = getActorsEvent;
-exports.deleteEvents = deleteEvents;
