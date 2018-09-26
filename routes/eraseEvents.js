@@ -5,7 +5,7 @@ const { deleteEvents } = require("../controllers/events");
 
 // Fetching Events by Actor
 router.delete("/", async (req, res) => {
-  deleteEvents(req, res);
+  await deleteEvents(req, res);
 });
 
 module.exports = router;

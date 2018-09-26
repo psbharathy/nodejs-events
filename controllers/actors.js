@@ -22,7 +22,6 @@ exports.findActor = async actorId => {
 
 exports.getActorStreak = async (req, res) => {
   const actors = await getActorStreak();
-  console.log(actors);
   return res.send(actorTransformers(actors));
 };
 

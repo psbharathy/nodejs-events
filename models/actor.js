@@ -59,12 +59,23 @@ exports.updateActor = async actor => {
   });
 };
 
+exports.deleteActor = async () => {
+  return new Promise((resolve, reject) => {
+    let actQuery = "DELETE FROM actors";
+    db.execute(actQuery, function(err, result) {
+      if (err) reject(new Error(err));
+      // console.log(" Actors Deleted !");
+      resolve(result);
+    });
+  });
+};
+
 exports.actorTransformers = actorsData => {
   const actors = [];
   for (let e in actorsData) {
     let eArray = {
       id: actorsData[e].id,
-      name: actorsData[e].login,
+      login: actorsData[e].login,
       avatar_url: actorsData[e].avatar_url
     };
     if (e.eventCount) e.push({ count: e.eventCount });

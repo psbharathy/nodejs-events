@@ -1,19 +1,19 @@
 const Joi = require("joi");
 const mysql = require("mysql2");
 
-async function addEvent(req) {
+async function addEvent(event) {
   return new Promise((resolve, reject) => {
     let sql =
       "INSERT INTO `events` (`id`,`event_type`, `actor_id`, `repo_id`, `created_at`) VALUES (?,?,?,?,?) ";
     let eventData = [
-      req.body.id,
-      req.body.type,
-      req.body.actor.id,
-      req.body.repo.id,
-      req.body.created_at
+      event.id,
+      event.type,
+      event.actor.id,
+      event.repo.id,
+      event.created_at
     ];
     db.execute(sql, eventData, function(err, result) {
-      if (err) reject(" Unable to create an Event!");
+      if (err) reject(new Error(err));
       resolve(result);
     });
   });
@@ -25,7 +25,7 @@ async function getEventById(eventId) {
       "SELECT events.id, events.created_at,events.event_type as type,repo.name as repo_name,repo.repo_url as repo_url,repo.id as repo_id,actors.avatar_url as avatar_url,actors.login as login, actors.id as actor_id FROM events LEFT JOIN actors on actors.id = events.actor_id LEFT JOIN repository as repo on repo.id=events.repo_id where events.id=?";
 
     db.execute(query, [eventId], function(err, result) {
-      if (err) reject(" Event Not found !");
+      if (err) reject(new Error(err));
       resolve(result);
     });
   });
@@ -54,25 +54,13 @@ async function getEventsByActor(actor) {
   });
 }
 
-async function deleteEvent(event) {
+async function deleteEvent() {
   return new Promise((resolve, reject) => {
-    let query = " TRUNCATE TABLE events";
-    let actQuery = " TRUNCATE TABLE actors";
-    let repoQuery = " TRUNCATE TABLE repository";
+    let query = "DELETE FROM events";
     db.execute(query, function(err, result) {
-      if (err) reject("Unable to delete an Event !");
+      if (err) reject(new Error(err));
       resolve(result);
-      console.log(" Events Records Deleted !");
-    });
-    db.execute(actQuery, function(err, result) {
-      if (err) reject("Unable to delete an actor !");
-      console.log(" Actors Records Deleted !");
-      resolve(result);
-    });
-    db.execute(repoQuery, function(err, result) {
-      if (err) reject("Unable to delete an Repo !");
-      console.log(" Repository Records Deleted !");
-      resolve(result);
+      // console.log(" Events Deleted !");
     });
   });
 }
@@ -82,11 +70,14 @@ function validateEvent(event) {
     id: Joi.number().required(),
 
     type: Joi.string()
-      .min(1)
+      .min(5)
       .max(255),
     actor: Joi.object().keys({
       id: Joi.number(),
-      login: Joi.string().required(),
+      login: Joi.string()
+        .min(5)
+        .max(255)
+        .required(),
       avatar_url: Joi.string()
         .uri()
         .trim()
@@ -94,7 +85,10 @@ function validateEvent(event) {
     }),
     repo: Joi.object().keys({
       id: Joi.number(),
-      name: Joi.string().required(),
+      name: Joi.string()
+        .min(5)
+        .max(255)
+        .required(),
       url: Joi.string()
         .uri()
         .trim()

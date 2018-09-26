@@ -1,11 +1,12 @@
 const mysql = require("mysql2");
+const config = require("config");
 module.exports = function() {
   try {
     const db = mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "secret",
-      database: "my_events"
+      host: config.get("db.host"),
+      user: config.get("db.user"),
+      password: config.get("db.pass"),
+      database: config.get("db.database")
     });
 
     // connect to database

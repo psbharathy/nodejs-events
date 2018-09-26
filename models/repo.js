@@ -25,5 +25,17 @@ async function createRepo(repo) {
     });
   });
 }
+
+async function deleteRepo() {
+  return new Promise((resolve, reject) => {
+    let repoQuery = "DELETE FROM repository";
+    db.execute(repoQuery, function(err, result) {
+      if (err) reject(new Error(err));
+      // console.log(" Repository Deleted !");
+      resolve(result);
+    });
+  });
+}
 exports.findRepo = findRepo;
 exports.createRepo = createRepo;
+exports.deleteRepo = deleteRepo;
